@@ -13,6 +13,8 @@ files:
 extraFiles:
   - from: openfc-auth-root.policy
     to: openfc-auth-root.policy
+  - from: openfc-vpnbridge.sh
+    to: openfc-vpnbridge.sh
 
 asarUnpack:
   - resources/**

@@ -51,7 +51,7 @@ export class VpnFacade implements IVpnFacade {
   }
 
   disconnectFromConfig(pid: string): Buffer {
-    return execSync(`pkexec ${path.resolve('openfc-vpnbridge.sh')} disconnect ${pid}`)
+    return execSync(`pkexec ${path.resolve(__dirname, './openfc-vpnbridge.sh')} ${pid}`)
   }
 
   connectToConfig(
@@ -101,10 +101,10 @@ export class VpnFacade implements IVpnFacade {
       }
       connectionSuccessCallback(undefined, true, vpnPid)
     }
-
+    console.log(path.resolve(__dirname, 'openfc-vpnbridge.sh'))
     return command(
       'pkexec',
-      [path.resolve('openfc-vpnbridge.sh'), `connect`, `-c ${configPath.trim()}`],
+      [path.resolve(__dirname, 'openfc-vpnbridge.sh'), `connect`, `-c ${configPath.trim()}`],
       onOutput,
       onFinish
     )
