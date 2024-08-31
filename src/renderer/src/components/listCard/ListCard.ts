@@ -20,17 +20,23 @@ export const ListCard = styled.div`
 export const ListCardFirstColumn = styled.div`
   display: flex;
   width: 100%;
-  padding: 20px;
+  padding: 10px 20px;
   justify-content: flex-start;
   box-sizing: border-box;
+  align-items: center;
 `
 
 export const ListCardSecondColumn = styled.div`
   display: flex;
   width: 100%;
   justify-content: flex-end;
-  padding: 20px;
+  align-items: center;
+  padding: 10px 20px;
+  height: 60px;
   box-sizing: border-box;
+  & > *:not(:first-child) {
+    margin-left: 10px;
+  }
 `
 
 export const ListCardIndicator = styled.div`
@@ -38,15 +44,15 @@ export const ListCardIndicator = styled.div`
   height: 10px;
   border-radius: 100%;
 
-  &.disconnected{
+  &.disconnected {
     background-color: #ff5555;
   }
 
-  &.connected{
+  &.connected {
     background-color: #55ff55;
   }
 
-  &.connecting{
+  &.connecting {
     background-color: #ffdd00;
   }
 `

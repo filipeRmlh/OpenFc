@@ -50,24 +50,13 @@ export const VpnList: FC<VpnListProps> = ({
   return (
     <ListCardContainer className="container">
       {configNames.map((name, key) => {
+        const statusEnumString =
+          ConnectionStatusEnum[configStatus?.[name] ?? ConnectionStatusEnum.Disconnected]
         return (
           <ListCard key={key}>
             <ListCardFirstColumn>
-              <ListCardIndicator
-                className={(configStatus && configStatus[name]
-                  ? ConnectionStatusEnum[configStatus[name]]
-                  : ConnectionStatusEnum[ConnectionStatusEnum.Disconnected]
-                ).toLowerCase()}
-              />
-              {name}(
-              {
-                readableStatusMapping[
-                  ConnectionStatusEnum[
-                    configStatus ? configStatus[name] : ConnectionStatusEnum.Disconnected
-                  ]
-                ]
-              }
-              )
+              <ListCardIndicator className={statusEnumString.toLowerCase()} />
+              {name}({readableStatusMapping[statusEnumString]})
             </ListCardFirstColumn>
             <ListCardSecondColumn>
               <Button

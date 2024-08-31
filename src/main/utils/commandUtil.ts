@@ -20,10 +20,11 @@ export const command = (
   | undefined => {
   try {
     const abortController = new AbortController()
+    console.log('RUN', commandString, argumentsArray)
     const commandObject = spawn(commandString, argumentsArray)
 
     commandObject.stdout.on('data', (data: Buffer) => {
-      console.log(data.toString());
+      console.log(data.toString())
       onDataOutput({ data, error: false })
     })
 

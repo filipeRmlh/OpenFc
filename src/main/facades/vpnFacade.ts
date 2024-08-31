@@ -9,6 +9,13 @@ import { TrustCertError } from '../errors/TrustCertError'
 
 export const KilledByUserCode = 29
 
+let rootPath: string
+///#if isDev
+rootPath = path.resolve(__dirname, './../..')
+///#else
+rootPath = path.resolve(__dirname, '../../../..')
+///#endif
+
 export class VpnFacade implements IVpnFacade {
   configDir: string
 
@@ -17,9 +24,18 @@ export class VpnFacade implements IVpnFacade {
   }
 
   async listConfig(): Promise<string[]> {
-    return (await fs.readdir(this.configDir)).map((nameAndExtension) =>
-      nameAndExtension.replace('.config', '')
-    )
+    try {
+      return (await fs.readdir(this.configDir)).map((nameAndExtension) =>
+        nameAndExtension.replace('.config', '')
+      )
+    } catch (e: unknown) {
+      if (e instanceof Error && e.message.toLowerCase().includes('no such file or directory')) {
+        console.info("Config directory doesn't exist. Trying to create")
+        await fs.mkdir(this.configDir, { recursive: true })
+        return []
+      }
+      throw e
+    }
   }
 
   async deleteConfig(configName: string): Promise<void> {
@@ -43,7 +59,6 @@ export class VpnFacade implements IVpnFacade {
   }
 
   async readConfig(configName: string): Promise<IVpnConfig> {
-    console.log(configName, path.resolve(this.configDir, `${configName}.config`))
     const resultString = (await fs.readFile(path.resolve(this.configDir, `${configName}.config`)))
       .toString()
       .trim()
@@ -51,7 +66,7 @@ export class VpnFacade implements IVpnFacade {
   }
 
   disconnectFromConfig(pid: string): Buffer {
-    return execSync(`pkexec ${path.resolve(__dirname, './openfc-vpnbridge.sh')} ${pid}`)
+    return execSync(`pkexec ${path.resolve(rootPath, './openfc-vpnbridge.sh')} disconnect ${pid}`)
   }
 
   connectToConfig(
@@ -92,6 +107,7 @@ export class VpnFacade implements IVpnFacade {
       }
     }
     const onFinish = (error?: Error, code?: number): void => {
+      console.log(error, code)
       if (code === KilledByUserCode) {
         connectionSuccessCallback(undefined, true, vpnPid)
       }
@@ -101,10 +117,9 @@ export class VpnFacade implements IVpnFacade {
       }
       connectionSuccessCallback(undefined, true, vpnPid)
     }
-    console.log(path.resolve(__dirname, 'openfc-vpnbridge.sh'))
     return command(
       'pkexec',
-      [path.resolve(__dirname, 'openfc-vpnbridge.sh'), `connect`, `-c ${configPath.trim()}`],
+      [path.resolve(rootPath, 'openfc-vpnbridge.sh'), `connect`, `-c ${configPath.trim()}`],
       onOutput,
       onFinish
     )

@@ -28,6 +28,8 @@ declare global {
 
       onDisconnect: (callback: (value: { name: string }) => void) => Electron.IpcRenderer
 
+      onConnectionError: (callback: (value: { name: string, error: Error }) => void) => Electron.IpcRenderer
+
       getStatus: (name: string) => Promise<ConnectionStatusEnum>
 
       onAskTrustCert: (

@@ -1,9 +1,19 @@
 import { ipcMain } from 'electron'
 import { listConfigs } from './handlers/listConfigs'
 import { deleteConfig, openConfig, saveConfig } from './handlers/openConfig'
-import { connect, disconnect, getStatus, trustCert, unTrustCert } from './handlers/connect'
+import {
+  connect,
+  disconnect,
+  getStatus,
+  reloadEvents,
+  trustCert,
+  unTrustCert
+} from './handlers/connect'
+
+export { destroyServices } from './handlers/connect'
 
 export const loadIpc = (): void => {
+  reloadEvents()
   ipcMain.handle('listConfigs', listConfigs)
   ipcMain.handle('openConfig', openConfig)
   ipcMain.handle('saveConfig', saveConfig)
@@ -16,3 +26,4 @@ export const loadIpc = (): void => {
   ipcMain.on('connect', (event, name) => connect(event, name))
   ipcMain.on('disconnect', (event, name) => disconnect(event, name))
 }
+

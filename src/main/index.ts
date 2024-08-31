@@ -1,16 +1,19 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, net, protocol } from 'electron'
 import path, { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { loadTray } from './tray'
-import { loadIpc } from './ipc/ipcLoader'
+import { loadIpc, destroyServices } from './ipc/ipcLoader'
 import { nativeImage, NativeImage } from 'electron'
 import { appContext } from './singletons/contextSingleton'
+import { URL } from 'node:url'
 
 const getIcon = (): NativeImage => {
   return nativeImage.createFromPath(path.join(__dirname, '../../resources/icon.png'))
 }
 
 appContext.app = app
+
+const resourcesPath = path.join(__dirname, '../../resources/icon.png')
 
 function createWindow(): void {
   // Create the browser window.
@@ -50,6 +53,13 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+
+  protocol.handle('resource', (req) => {
+    const pathToResource = new URL(req.url).pathname
+    console.log('resource', resourcesPath, pathToResource)
+    return net.fetch(`file://${resourcesPath}${pathToResource}`)
+  })
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.filiperamalho.openfc')
 
@@ -68,6 +78,10 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+  app.on('quit', () => {
+    destroyServices()
+  })
+
   loadIpc()
 })
 

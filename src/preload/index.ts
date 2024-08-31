@@ -37,6 +37,11 @@ const api = {
   onDisconnect: (callback: (value: { name: string }) => void): Electron.IpcRenderer =>
     ipcRenderer.on('onDisconnect', (_event, value) => callback(value)),
 
+  onConnectionError: (
+    callback: (value: { name: string; error: Error }) => void
+  ): Electron.IpcRenderer =>
+    ipcRenderer.on('onConnectionError', (_event, value) => callback(value)),
+
   onAskTrustCert: (
     callback: (value: { name: string; trustCertValue: string }) => void
   ): Electron.IpcRenderer => ipcRenderer.on('onAskTrustCert', (_event, value) => callback(value))

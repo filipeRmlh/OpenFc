@@ -13,7 +13,7 @@ export const saveConfig = async (
   configName: string,
   config: IVpnConfig
 ): Promise<void> => {
-  console.log('A', configName, config);
+  console.log('A', configName, config)
   const name = config.vpnName
 
   if (name !== configName) {

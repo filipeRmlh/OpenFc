@@ -26,6 +26,8 @@ export interface IVpnGroupConnectionService {
 
   onAskTrustCert(fn: (trustCertValue: string) => void): IVpnGroupConnectionService
 
+  onConnectionErrorCallback(fn: (error: Error) => void): IVpnGroupConnectionService
+
   connect(config: IVpnConfig): void
 
   disconnect(): void

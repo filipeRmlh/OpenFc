@@ -42,6 +42,11 @@ export const useAppStates = (): UseAppStatesReturn => {
     window.api.onAskTrustCert(({ name, trustCertValue }) => {
       setTrustCertData({ name, trustCertValue })
     })
+
+    window.api.onConnectionError(({ name, error }) => {
+      console.log(error)
+      setConfigStatus((prevState) => ({ ...prevState, [name]: ConnectionStatusEnum.Disconnected }))
+    })
   }, [])
 
   const updateList = (): void => {

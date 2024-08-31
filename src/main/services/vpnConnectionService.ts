@@ -16,6 +16,7 @@ export class VpnGroupConnectionService implements IVpnGroupConnectionService {
   private onConnectCallbackFn?: () => void = undefined
   private onConnectingCallbackFn?: () => void = undefined
   private onDisconnectCallbackFn?: () => void = undefined
+  private onConnectionErrorCallbackFn?: (error: Error) => void = undefined
   private onAskTrustCertFn: (trustCertValue: string) => void = () => undefined
 
   constructor(private config: IVpnConfig) {}
@@ -34,12 +35,17 @@ export class VpnGroupConnectionService implements IVpnGroupConnectionService {
     return this
   }
 
+  onConnectionErrorCallback(fn: (error: Error) => void): IVpnGroupConnectionService {
+    this.onConnectionErrorCallbackFn = fn
+    return this
+  }
+
   onAskTrustCert(fn: (trustCertValue: string) => void): IVpnGroupConnectionService {
     this.onAskTrustCertFn = fn
     return this
   }
 
-  private onErrorCallback(): void {
+  private onErrorCallback(error?: Error): void {
     this.disconnect()
     const connection = this.connection
     if (
@@ -51,7 +57,9 @@ export class VpnGroupConnectionService implements IVpnGroupConnectionService {
         connection.reconnectionTry++
         this.connect()
       }, 4000)
+      return
     }
+    this.onConnectionErrorCallbackFn?.(error ?? new Error('Failed to connect'))
   }
 
   connect(): void {
@@ -107,20 +115,20 @@ export class VpnGroupConnectionService implements IVpnGroupConnectionService {
 
   disconnect(): void {
     const connection = this.connection
+    this.connection = undefined
     if (!connection) {
       return
     }
     if (
       this.connectionStatus !== undefined &&
       this.connectionStatus !== null &&
-      this.connectionStatus === ConnectionStatusEnum.Disconnected
+      this.connectionStatus !== ConnectionStatusEnum.Disconnected
     ) {
       this.connectionStatus = ConnectionStatusEnum.Disconnected
-      return
     }
     try {
-      if (this.connection?.vpnPid) {
-        const result = vpnConnectorSingleton.disconnectFromConfig(this.connection.vpnPid).toString()
+      if (connection?.vpnPid) {
+        const result = vpnConnectorSingleton.disconnectFromConfig(connection.vpnPid).toString()
         if (result.includes('DISCONNECTED')) {
           this.connectionStatus = ConnectionStatusEnum.Disconnected
         } else {
@@ -128,7 +136,9 @@ export class VpnGroupConnectionService implements IVpnGroupConnectionService {
         }
       }
     } catch (e) {
-      console.log('Não conseguiu', e)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      console.log('Não conseguiu', e?.output?.toString() ?? e?.message ?? 'Could not disconnect')
     }
   }
 
@@ -140,7 +150,7 @@ export class VpnGroupConnectionService implements IVpnGroupConnectionService {
     this.config.trustedCert = undefined
     await vpnConnectorSingleton.saveConfig(this.config.vpnName, this.config)
     this.disconnect()
-    this.onDisconnectCallbackFn?.call(undefined);
+    this.onDisconnectCallbackFn?.call(undefined)
   }
 
   async trustCert(trustCert: string): Promise<void> {
